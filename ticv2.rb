@@ -1,12 +1,20 @@
+# frozen_string_literal: true
+
 # Create player objects
 class Player
-  attr_reader :name, :symbol
-  
-  @player_choices = []
+  attr_reader :name,
+              :marker,
+              :player_choices
 
-  def initialize(name, symbol)
+  def initialize(name, marker)
     @name = name
-    @symbol = symbol
+    @marker = marker
+    validate_marker
+    @player_choices = []
+  end
+
+  def validate_marker
+    # Check that marker is 1 uppercase letter and not already taken
   end
 
   def add_choice(choice)
@@ -18,38 +26,66 @@ class Player
   end
 end
 
+# Methods relating to displaying game status
+module Display
+  def print_board
+    divider = '~~~~~~~~~'
+    puts "\n\n#{@board[0]} | #{@board[1]} | #{@board[2]}\n
+              #{divider}\n
+              #{@board[3]} | #{@board[4]} | #{@board[5]}\n
+              #{divider}\n
+              #{@board[6]} | #{@board[7]} | #{@board[8]}\n\n"
+  end
+end
+
+# Create game object
 class Game
-  attr_accessor :board, :game_over
-  
+  include Display
+
+  attr_reader :board,
+              :game_over,
+              :current_player,
+              :available_spaces
+
   def initialize(player1, player2)
     @player1 = player1
     @player2 = player2
   end
 
   def create_game
+    @game_over = false
     @board = [1, 2, 3, 4, 5, 6, 7, 8, 9]
     @available_spaces = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+    @current_player = @player1
   end
 
-  def place_marker(space)
+  def play_turn(space)
     # Check if space is occupied
+    while space_occupied?(space)
+      puts 'That choice is invalid. Please enter an available space'
+      space = gets.chomp.to_i
+    end
 
     # Add space to player choices
+    @current_player.add_choice(space)
 
     # Remove space from available choices
+    @available_spaces.delete(space)
 
     # Place marker in space
-
-    # Print board
+    @board[space - 1] = @current_player.marker
+    p @current_player.player_choices
 
     # Check if game is over
-    win_logic()
+    win_logic
+
+    # Swap players
+    swap_players
   end
 
   private
 
   def win_logic
-    @game_over = false
     winning_combinations = [
       [1, 2, 3],
       [4, 5, 6],
@@ -58,17 +94,66 @@ class Game
       [2, 5, 8],
       [3, 6, 9],
       [1, 5, 9],
-      [3, 5, 7],
+      [3, 5, 7]
     ]
+
     # If player choices.contains winning combination
-    @game_over = true
+    # @game_over = true
+  end
+
+  def space_occupied?(space)
+    occupied = false
+    # If space = default set occupied to true
+    occupied = true if @board[space - 1].to_i != space
+    occupied
+  end
+
+  def whose_turn
+    @current_player
+  end
+
+  def swap_players
+    case @current_player
+    when @player1
+      @current_player = @player2
+    when @player2
+      @current_player = @player1
+    else
+      puts 'PlayerSwapError'
+    end
   end
 end
 
-player1 = Player.new("C","X")
-player2 = Player.new("A","O")
+puts 'Welcome to Tic-Tac-Toe! Player 1, please enter your name:'
+player1_name = gets.chomp
+# player1_name = "Cooper"
+
+puts 'Please type an uppercase letter to be your tic-tac-toe symbol:'
+player1_marker = gets.chomp
+# player1_marker = "C"
+
+player1 = Player.new(player1_name, player1_marker)
+
+puts 'Player 2, please enter your name:'
+player2_name = gets.chomp
+# player2_name = "Aly"
+
+puts "Please type an uppercase letter to be your tic-tac-toe symbol (Player 1 picked #{player1.marker}): "
+player2_marker = gets.chomp
+# player2_marker = "A"
+
+player2 = Player.new(player2_name, player2_marker)
 
 game = Game.new(player1, player2)
 game.create_game
 
-p game.board
+p player1.name, player2.name
+
+# Loop until game is over
+until game.game_over
+  game.print_board
+  puts "It is #{game.current_player.name}'s turn.\nPlease pick an open space:"
+  game.play_turn(gets.chomp.to_i)
+  # game.play_turn(1)
+  # p game.board, game.available_spaces
+end
