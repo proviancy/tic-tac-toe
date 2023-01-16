@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'pry'
+
 # Create player objects
 class Player
   attr_reader :name,
@@ -30,11 +32,7 @@ end
 module Display
   def print_board
     divider = '~~~~~~~~~'
-    puts "\n\n#{@board[0]} | #{@board[1]} | #{@board[2]}\n
-              #{divider}\n
-              #{@board[3]} | #{@board[4]} | #{@board[5]}\n
-              #{divider}\n
-              #{@board[6]} | #{@board[7]} | #{@board[8]}\n\n"
+    puts "\n\n#{@board[0]} | #{@board[1]} | #{@board[2]}\n#{divider}\n#{@board[3]} | #{@board[4]} | #{@board[5]}\n#{divider}\n#{@board[6]} | #{@board[7]} | #{@board[8]}\n\n"
   end
 end
 
@@ -74,18 +72,18 @@ class Game
 
     # Place marker in space
     @board[space - 1] = @current_player.marker
-    p @current_player.player_choices
 
     # Check if game is over
     win_logic
 
     # Swap players
-    swap_players
+    swap_players unless @game_over
   end
 
   private
 
   def win_logic
+    p 'Running win_logic'
     winning_combinations = [
       [1, 2, 3],
       [4, 5, 6],
@@ -97,8 +95,12 @@ class Game
       [3, 5, 7]
     ]
 
-    # If player choices.contains winning combination
-    # @game_over = true
+    player_combos = @current_player.player_choices.permutation(3).to_a
+    unless player_combos == []
+      winning_combinations.each do |winning_combo|
+        @game_over = true if player_combos.include?(winning_combo)
+      end
+    end
   end
 
   def space_occupied?(space)
@@ -147,8 +149,6 @@ player2 = Player.new(player2_name, player2_marker)
 game = Game.new(player1, player2)
 game.create_game
 
-p player1.name, player2.name
-
 # Loop until game is over
 until game.game_over
   game.print_board
@@ -157,3 +157,5 @@ until game.game_over
   # game.play_turn(1)
   # p game.board, game.available_spaces
 end
+
+p "Game over! #{game.current_player.name} wins!"
