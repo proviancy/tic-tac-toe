@@ -1,2 +1,2 @@
 Todo:
-- Verify character selection
+- Play tic-tac-toe!
