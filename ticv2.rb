@@ -12,14 +12,18 @@ class Player
 
   def initialize(name, marker)
     @name = name
-    @marker = marker
-    validate_marker
+    validate_marker(marker)
     @player_choices = []
     @win_count = 0
   end
 
-  def validate_marker
+  def validate_marker(marker)
+    @marker = marker.to_s
     # Check that marker is 1 uppercase letter and not already taken
+    until (@marker =~ /[A-Z]*/).zero? && @marker.length == 1
+      puts 'You entered an invalid selection. Please enter 1 uppercase letter.'
+      @marker = gets.chomp
+    end
   end
 
   def add_choice(choice)
@@ -35,7 +39,8 @@ end
 module Display
   def print_board
     divider = '~~~~~~~~~'
-    puts "\n\n#{@board[0]} | #{@board[1]} | #{@board[2]}\n#{divider}\n#{@board[3]} | #{@board[4]} | #{@board[5]}\n#{divider}\n#{@board[6]} | #{@board[7]} | #{@board[8]}\n\n"
+    puts "\n\n#{@board[0]} | #{@board[1]} | #{@board[2]}\n#{divider}\n#{@board[3]} | #{@board[4]} | #{@board[5]}\n" \
+         "#{divider}\n#{@board[6]} | #{@board[7]} | #{@board[8]}\n\n"
   end
 end
 
@@ -145,23 +150,33 @@ class Game
   end
 end
 
+player1_name = ''
+player1_marker = ''
+player2_name = ''
+player2_marker = ''
+
 puts 'Welcome to Tic-Tac-Toe! Player 1, please enter your name:'
-player1_name = gets.chomp
-# player1_name = "Cooper"
+# while player1_name.empty? { player1_name = gets.chomp }
+player1_name = gets.chomp while player1_name.empty?
 
 puts 'Please type an uppercase letter to be your tic-tac-toe symbol:'
-player1_marker = gets.chomp
-# player1_marker = "C"
+# while player1_marker.empty? { player1_marker = gets.chomp }
+player1_marker = gets.chomp while player1_marker.empty?
 
 player1 = Player.new(player1_name, player1_marker)
 
 puts 'Player 2, please enter your name:'
-player2_name = gets.chomp
-# player2_name = "Aly"
+# while player2_name.empty? { player2_name = gets.chomp }
+player2_name = gets.chomp while player2_name.empty?
 
-puts "Please type an uppercase letter to be your tic-tac-toe symbol (Player 1 picked #{player1.marker}): "
-player2_marker = gets.chomp
-# player2_marker = "A"
+puts "Please type an uppercase letter to be your tic-tac-toe symbol (#{player1.name} picked #{player1.marker}): "
+# while player2_marker.empty? { player2_marker = gets.chomp }
+player2_marker = gets.chomp while player2_marker.empty?
+
+while player2_marker == player1.marker
+  puts "You can't pick the same marker as #{player1.name}"
+  player2_marker = gets.chomp
+end
 
 player2 = Player.new(player2_name, player2_marker)
 quit_game = false
